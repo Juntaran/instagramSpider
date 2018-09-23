@@ -14,6 +14,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 import json
+import progressbar
 
 # lantern
 proxy_lantern = {
@@ -67,15 +68,21 @@ def collect_pic_url(u_download):
 # 下载图片
 def download_pic():
     global pic_index
-    print("The number of pictures waiting to be downloaded:", len(pic_set))
+    total = len(pic_set)
+    print("The number of pictures waiting to be downloaded:", total)
 
-    for i in pic_set:
-        file_name = save_dir + target + "_" + str(pic_index) + i[-4:]
+    widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar('#'), ' ', progressbar.Timer(), ' ', progressbar.ETA()]
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=10*total).start()
+
+    for i in range(total):
+        file_name = save_dir + target + "_" + str(pic_index) + pic_set[i][-4:]
         pic_index += 1
         f = open(file_name, 'wb')
-        pic_bin = requests.get(i, proxies=proxy_socks).content
+        pic_bin = requests.get(pic_set[i], proxies=proxy_socks).content
         f.write(pic_bin)
         f.close()
+        pbar.update(10 * i + 1)
+    pbar.finish()
 
 
 # 去重 list
