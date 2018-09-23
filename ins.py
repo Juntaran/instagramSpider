@@ -63,7 +63,7 @@ def collect_pic_url(u_download):
 # 下载图片
 def download_pic():
     global pic_index
-    print(len(pic_set))
+    print("The number of pictures waiting to be downloaded: ", len(pic_set))
     for i in pic_set:
         file_name = save_dir + target + "_" + str(pic_index) + i[-4:]
         pic_index += 1
