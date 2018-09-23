@@ -103,6 +103,8 @@ if __name__ == '__main__':
         for u in divs:
             url_set.append(u.find_element_by_tag_name('a').get_attribute('href'))
 
+        url_set = doList(url_set)
+
         # 如果本次页面更新没有加入新的URL则可视为到达页面底端，跳出
         if len(url_set) == url_set_size:
             break
@@ -119,6 +121,7 @@ if __name__ == '__main__':
 
     # 对 url_set 去重
     url_set = doList(url_set)
+    print("start collect picture url")
     for url in url_set:
         collect_pic_url(url)
 
