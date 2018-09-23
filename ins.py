@@ -38,11 +38,11 @@ header = {
 
 target = "sakumomo1203"
 
-url_set = set([])  # set用来unique URL
+url_set = []
+pic_set = []
 pic_index = 0
 url_set_size = 0
 save_dir = './pic/' + target + '/'
-pic_set = set()  # set用来unique URL
 
 
 # 收集图片 url
@@ -54,16 +54,21 @@ def collect_pic_url(u_download):
     w2json = w2json[w2json.find('=') + 1: -1]
 
     w = json.loads(w2json)
-    pic_set.add(w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_resources'][2]['src'])
+    pic_set.append(w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_resources'][2]['src'])
     if 'edge_sidecar_to_children' in w['entry_data']['PostPage'][0]['graphql']['shortcode_media']:
         for i in w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges']:
-            pic_set.add(i['node']['display_resources'][2]['src'])
+            pic_set.append(i['node']['display_resources'][2]['src'])
+
+    # 判断是否是视频
+    if 'video_url' in w['entry_data']['PostPage'][0]['graphql']['shortcode_media']:
+        pic_set.append(w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['video_url'])
 
 
 # 下载图片
 def download_pic():
     global pic_index
-    print("The number of pictures waiting to be downloaded: ", len(pic_set))
+    print("The number of pictures waiting to be downloaded:", len(pic_set))
+
     for i in pic_set:
         file_name = save_dir + target + "_" + str(pic_index) + i[-4:]
         pic_index += 1
@@ -71,6 +76,16 @@ def download_pic():
         pic_bin = requests.get(i, proxies=proxy_socks).content
         f.write(pic_bin)
         f.close()
+
+
+# 去重 list
+def doList(list):
+    temp = []
+    for i in list:
+        if i not in temp:
+            temp.append(i)
+
+    return temp
 
 
 if __name__ == '__main__':
@@ -86,7 +101,7 @@ if __name__ == '__main__':
     while (True):
         divs = driver.find_elements_by_class_name('v1Nh3')  # 这里最好使用xxxx_by_class_name，我尝试过用xpath绝对路径，但是好像对于页面变化比较敏感
         for u in divs:
-            url_set.add(u.find_element_by_tag_name('a').get_attribute('href'))
+            url_set.append(u.find_element_by_tag_name('a').get_attribute('href'))
 
         # 如果本次页面更新没有加入新的URL则可视为到达页面底端，跳出
         if len(url_set) == url_set_size:
@@ -102,7 +117,11 @@ if __name__ == '__main__':
         ActionChains(driver).send_keys(Keys.PAGE_DOWN).perform()
         time.sleep(1)
 
+    # 对 url_set 去重
+    url_set = doList(url_set)
     for url in url_set:
         collect_pic_url(url)
 
+    # 对 pic_set 去重
+    pic_set = doList(pic_set)
     download_pic()
