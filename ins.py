@@ -55,7 +55,6 @@ def collect_pic_url(u_download):
 
     w = json.loads(w2json)
     pic_set.add(w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_resources'][2]['src'])
-    print(w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_resources'][2]['src'])
     if 'edge_sidecar_to_children' in w['entry_data']['PostPage'][0]['graphql']['shortcode_media']:
         for i in w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges']:
             pic_set.add(i['node']['display_resources'][2]['src'])
@@ -69,7 +68,7 @@ def download_pic():
         file_name = save_dir + target + "_" + str(pic_index) + i[-4:]
         pic_index += 1
         f = open(file_name, 'wb')
-        pic_bin = requests.get(i).content
+        pic_bin = requests.get(i, proxies=proxy_socks).content
         f.write(pic_bin)
         f.close()
 
@@ -104,7 +103,6 @@ if __name__ == '__main__':
         time.sleep(1)
 
     for url in url_set:
-        print(url)
         collect_pic_url(url)
 
     download_pic()
