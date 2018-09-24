@@ -129,8 +129,16 @@ if __name__ == '__main__':
     # 对 url_set 去重
     url_set = doList(url_set)
     print("start collect picture url")
-    for url in url_set:
-        collect_pic_url(url)
+    total = len(url_set)
+    print("The number of pictures waiting to be collected:", total)
+    widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar('#'), ' ', progressbar.Timer(), ' ',
+               progressbar.ETA()]
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=10 * total).start()
+
+    for i in range(total):
+        collect_pic_url(url_set[i])
+        pbar.update(10 * i + 1)
+    pbar.finish()
 
     # 对 pic_set 去重
     pic_set = doList(pic_set)
