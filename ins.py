@@ -105,15 +105,24 @@ if __name__ == '__main__':
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
+    count = 0
+
     while (True):
-        divs = driver.find_elements_by_class_name('v1Nh3')  # 这里最好使用xxxx_by_class_name，我尝试过用xpath绝对路径，但是好像对于页面变化比较敏感
+        # 这里最好使用xxxx_by_class_name，我尝试过用xpath绝对路径，但是好像对于页面变化比较敏感
+        divs = driver.find_elements_by_class_name('v1Nh3')
         for u in divs:
             url_set.append(u.find_element_by_tag_name('a').get_attribute('href'))
 
         url_set = doList(url_set)
 
-        # 如果本次页面更新没有加入新的URL则可视为到达页面底端，跳出
+        # 如果本次页面更新没有加入新的URL则可视为到达页面底端，count+1
         if len(url_set) == url_set_size:
+            count += 1
+        else:
+            count = 0
+
+        # 如果连续3次都没有加入新 url，跳出
+        if count == 3:
             break
 
         url_set_size = len(url_set)
