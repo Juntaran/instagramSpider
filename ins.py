@@ -37,7 +37,7 @@ header = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36',
 }
 
-target = "sakumomo1203"
+target = "yua_mikami"
 
 url_set = []
 pic_set = []
@@ -106,6 +106,7 @@ if __name__ == '__main__':
         os.makedirs(save_dir)
 
     count = 0
+    sleeptime = 1
 
     while (True):
         # 这里最好使用xxxx_by_class_name，我尝试过用xpath绝对路径，但是好像对于页面变化比较敏感
@@ -115,11 +116,13 @@ if __name__ == '__main__':
 
         url_set = doList(url_set)
 
-        # 如果本次页面更新没有加入新的URL则可视为到达页面底端，count+1
+        # 如果本次页面更新没有加入新的URL则可视为到达页面底端，count+1,每次等待刷新时间 +1s
         if len(url_set) == url_set_size:
             count += 1
+            sleeptime += 1
         else:
             count = 0
+            sleeptime = 1
 
         # 如果连续3次都没有加入新 url，跳出
         if count == 3:
@@ -129,11 +132,11 @@ if __name__ == '__main__':
 
         # 三次滑动，保证页面足够更新
         ActionChains(driver).send_keys(Keys.PAGE_DOWN).perform()
-        time.sleep(1)
+        time.sleep(sleeptime)
         ActionChains(driver).send_keys(Keys.PAGE_DOWN).perform()
-        time.sleep(1)
+        time.sleep(sleeptime)
         ActionChains(driver).send_keys(Keys.PAGE_DOWN).perform()
-        time.sleep(1)
+        time.sleep(sleeptime)
 
     # 对 url_set 去重
     url_set = doList(url_set)
