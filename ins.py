@@ -13,6 +13,7 @@ from lxml import etree
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+import selenium.common
 import json
 import progressbar
 
@@ -106,13 +107,16 @@ if __name__ == '__main__':
         os.makedirs(save_dir)
 
     count = 0
-    sleeptime = 1
+    sleeptime = 1.5
 
     while (True):
         # 这里最好使用xxxx_by_class_name，我尝试过用xpath绝对路径，但是好像对于页面变化比较敏感
         divs = driver.find_elements_by_class_name('v1Nh3')
         for u in divs:
-            url_set.append(u.find_element_by_tag_name('a').get_attribute('href'))
+            try:
+                url_set.append(u.find_element_by_tag_name('a').get_attribute('href'))
+            except selenium.common.exceptions.StaleElementReferenceException as ex:
+                continue
 
         url_set = doList(url_set)
 
@@ -125,18 +129,22 @@ if __name__ == '__main__':
             sleeptime = 1
 
         # 如果连续3次都没有加入新 url，跳出
-        if count == 3:
+        if count == 10:
+            print("Retry 3 times, I think there is no more pictures")
             break
 
         url_set_size = len(url_set)
 
+        if count > 0:
+            print("Retry %d times" % count)
+
         # 三次滑动，保证页面足够更新
-        ActionChains(driver).send_keys(Keys.PAGE_DOWN).perform()
         time.sleep(sleeptime)
         ActionChains(driver).send_keys(Keys.PAGE_DOWN).perform()
         time.sleep(sleeptime)
         ActionChains(driver).send_keys(Keys.PAGE_DOWN).perform()
         time.sleep(sleeptime)
+        ActionChains(driver).send_keys(Keys.PAGE_DOWN).perform()
 
     # 对 url_set 去重
     url_set = doList(url_set)

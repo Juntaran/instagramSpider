@@ -1,6 +1,6 @@
 # instagramSpider
 
-An Instagram Spider base on [Selenium](https://www.seleniumhq.org/)
+An Instagram Spider base on [Selenium](https://www.seleniumhq.org/).
 
 Can craw all Pictures/Videos of the designated account.
 
