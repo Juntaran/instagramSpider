@@ -56,25 +56,14 @@ def collect_pic_url(u_download):
     print(u_download)
 
     if private:
+        # 隐私账户需要登录
         driver.get(u_download)
         rec = driver.page_source
-        selector = etree.HTML(rec.content)
+        selector = etree.HTML(rec)
     else:
         rec = requests.get(u_download, headers=header, proxies=proxy_socks)
-        selector = etree.HTML(rec)
+        selector = etree.HTML(rec.content)
 
-
-    # 隐私账户需要登录
-
-    # driver.get(u_download)
-    # test = driver.page_source
-    # print(test)
-    #
-    # rec = test
-
-
-    # selector = etree.HTML(rec.content)
-    # selector = etree.HTML(rec)
 
     w2json = selector.xpath('/html/body/script')[0].text
     w2json = w2json[w2json.find('=') + 1: -1]
@@ -167,7 +156,7 @@ if __name__ == '__main__':
         if count > 0:
             print("Retry %d times" % count)
 
-        # 三次滑动，保证页面足够更新
+        # 3 次滑动，保证页面足够更新
         time.sleep(sleeptime)
         ActionChains(driver).send_keys(Keys.PAGE_DOWN).perform()
         time.sleep(sleeptime)
