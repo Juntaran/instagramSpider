@@ -12,6 +12,7 @@ Can craw all Pictures/Videos of the designated account.
 | 2  | Muti-threading  |   |
 | 3  | Download Video  | √ |
 | 4  | Download in Sequence  | √ |
+| 5  | Support Privacy Account | √ |
 
 ___
 
