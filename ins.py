@@ -17,6 +17,8 @@ import selenium.common
 import json
 import progressbar
 
+driver = webdriver.Chrome('/Users/juntaran/Downloads/chromedriver')
+
 # lantern
 proxy_lantern = {
     "http": "http://127.0.0.1:59677",
@@ -40,6 +42,8 @@ header = {
 
 target = "yua_mikami"
 
+private = True
+
 url_set = []
 pic_set = []
 pic_index = 0
@@ -49,13 +53,34 @@ save_dir = './pic/' + target + '/'
 
 # 收集图片 url
 def collect_pic_url(u_download):
-    rec = requests.get(u_download, headers=header, proxies=proxy_socks)
-    selector = etree.HTML(rec.content)
+    print(u_download)
+
+    if private:
+        driver.get(u_download)
+        rec = driver.page_source
+        selector = etree.HTML(rec.content)
+    else:
+        rec = requests.get(u_download, headers=header, proxies=proxy_socks)
+        selector = etree.HTML(rec)
+
+
+    # 隐私账户需要登录
+
+    # driver.get(u_download)
+    # test = driver.page_source
+    # print(test)
+    #
+    # rec = test
+
+
+    # selector = etree.HTML(rec.content)
+    # selector = etree.HTML(rec)
 
     w2json = selector.xpath('/html/body/script')[0].text
     w2json = w2json[w2json.find('=') + 1: -1]
 
     w = json.loads(w2json)
+    print(w)
     pic_set.append(w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_resources'][2]['src'])
     if 'edge_sidecar_to_children' in w['entry_data']['PostPage'][0]['graphql']['shortcode_media']:
         for i in w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges']:
@@ -76,7 +101,7 @@ def download_pic():
     pbar = progressbar.ProgressBar(widgets=widgets, maxval=10*total).start()
 
     for i in range(total):
-        file_name = save_dir + target + "_" + str(pic_index) + pic_set[i][-4:]
+        file_name = save_dir + target + "_" + str(pic_index) + pic_set[i].split('?')[0][-4:]
         pic_index += 1
         f = open(file_name, 'wb')
         pic_bin = requests.get(pic_set[i], proxies=proxy_socks).content
@@ -99,7 +124,6 @@ def doList(list):
 if __name__ == '__main__':
     options = webdriver.ChromeOptions()
     options.add_argument('lang=zh_CN.UTF-8')
-    driver = webdriver.Chrome('/Users/juntaran/Downloads/chromedriver')
     raw_url = "https://www.instagram.com/" + target + "/"
     driver.get(raw_url)
 
@@ -108,6 +132,11 @@ if __name__ == '__main__':
 
     count = 0
     sleeptime = 1.5
+
+    # 这段时间输入用户名密码
+    if private:
+        time.sleep(60)
+        driver.get(raw_url)
 
     while (True):
         # 这里最好使用xxxx_by_class_name，我尝试过用xpath绝对路径，但是好像对于页面变化比较敏感
@@ -128,7 +157,7 @@ if __name__ == '__main__':
             count = 0
             sleeptime = 1
 
-        # 如果连续3次都没有加入新 url，跳出
+        # 如果连续 10 次都没有加入新 url，跳出
         if count == 10:
             print("Retry 3 times, I think there is no more pictures")
             break
