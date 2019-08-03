@@ -17,6 +17,9 @@ import selenium.common
 import json
 import progressbar
 
+target = "yua_mikami"
+private = False
+
 driver = webdriver.Chrome('/Users/juntaran/Downloads/chromedriver')
 
 # lantern
@@ -24,6 +27,8 @@ proxy_lantern = {
     "http": "http://127.0.0.1:59677",
     "https": "http://127.0.0.1:59677"
 }
+
+shadowsocks = "127.0.0.1:1080"
 
 # shadowsocks
 proxy_socks = {
@@ -40,10 +45,6 @@ header = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36',
 }
 
-target = "yua_mikami"
-
-private = True
-
 url_set = []
 pic_set = []
 pic_index = 0
@@ -53,7 +54,6 @@ save_dir = './pic/' + target + '/'
 
 # 收集图片 url
 def collect_pic_url(u_download):
-    print(u_download)
 
     if private:
         # 隐私账户需要登录
@@ -64,26 +64,27 @@ def collect_pic_url(u_download):
         rec = requests.get(u_download, headers=header, proxies=proxy_socks)
         selector = etree.HTML(rec.content)
 
-
     w2json = selector.xpath('/html/body/script')[0].text
     w2json = w2json[w2json.find('=') + 1: -1]
 
     w = json.loads(w2json)
-    print(w)
     pic_set.append(w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['display_resources'][2]['src'])
     if 'edge_sidecar_to_children' in w['entry_data']['PostPage'][0]['graphql']['shortcode_media']:
         for i in w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges']:
             pic_set.append(i['node']['display_resources'][2]['src'])
+            print(i['node']['display_resources'][2]['src'])
 
     # 判断是否是视频
     if 'video_url' in w['entry_data']['PostPage'][0]['graphql']['shortcode_media']:
         pic_set.append(w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['video_url'])
+        print(w['entry_data']['PostPage'][0]['graphql']['shortcode_media']['video_url'])
 
 
 # 下载图片
 def download_pic():
     global pic_index
     total = len(pic_set)
+    print(pic_set)
     print("The number of pictures waiting to be downloaded:", total)
 
     widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar('#'), ' ', progressbar.Timer(), ' ', progressbar.ETA()]
@@ -113,6 +114,10 @@ def doList(list):
 if __name__ == '__main__':
     options = webdriver.ChromeOptions()
     options.add_argument('lang=zh_CN.UTF-8')
+    options.add_argument('--proxy-server=%s' % shadowsocks)
+
+    # driver = webdriver.Chrome(options=options)
+
     raw_url = "https://www.instagram.com/" + target + "/"
     driver.get(raw_url)
 
@@ -146,8 +151,8 @@ if __name__ == '__main__':
             count = 0
             sleeptime = 1
 
-        # 如果连续 10 次都没有加入新 url，跳出
-        if count == 10:
+        # 如果连续 3 次都没有加入新 url，跳出
+        if count == 3:
             print("Retry 3 times, I think there is no more pictures")
             break
 
@@ -174,6 +179,7 @@ if __name__ == '__main__':
     pbar = progressbar.ProgressBar(widgets=widgets, maxval=10 * total).start()
 
     for i in range(total):
+        print(i)
         collect_pic_url(url_set[i])
         pbar.update(10 * i + 1)
     pbar.finish()
