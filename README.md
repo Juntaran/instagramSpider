@@ -9,10 +9,9 @@ Can craw all Pictures/Videos of the designated account.
 | ID  | Todo  | Done  |
 |---|---|---|
 | 1  | Download pictures of child pages  | √  |
-| 2  | Muti-threading  |   |
-| 3  | Download Video  | √ |
-| 4  | Download in Sequence  | √ |
-| 5  | Support Privacy Account | √ |
+| 2  | Download Video  | √ |
+| 3  | Support md5 check  | √ |
+| 4  | Support Privacy Account | √ |
 
 ___
 
